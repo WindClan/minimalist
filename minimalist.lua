@@ -6,8 +6,7 @@ local pullEventRaw = os.pullEventRaw
 local isInProgram = true
 local newRequire = dofile("/rom/modules/main/cc/require.lua").make
 local dir = "/"
-local makeNewEnv
-function makeNewEnv(args,prog)
+local function makeNewEnv(args,prog)
 	local newArgs = table.copy(args)
 	newArgs[0] = prog
 	local newEnv = setmetatable({arg=newArgs},{__index=_G})
@@ -59,7 +58,8 @@ local defaults = {
 	end,
 	rm = function(path)
 		if path == nil then
-			path = "AsjrhjhAJhjkhfsgdkjsghfAKsdghjskhga"
+			print("No such file")
+			return
 		end
 		if fs.exists(path) then
 			fs.delete(path)
@@ -83,7 +83,7 @@ local defaults = {
 				lines[current] = {"","",""}
 			end
 			local color = "0"
-			if fs.isDir(dir1.."/"..v) then
+			if fs.isDir(fs.combine(dir1,v)) then
 				color = "5"
 			end
 			if v:sub(1,1) ~= "." then
@@ -144,6 +144,17 @@ local defaults = {
 		end)
 		a.close()
 	end,
+	import = function()
+		print("Drag the files over the terminal")
+		local _, files = os.pullEvent("file_transfer")
+		for _, v in ipairs(files.getFiles()) do
+			local a = fs.open(fs.combine(dir,v.getName()), "wb")
+			print("Transferring "..v.getName())
+			a.write(v.readAll())
+			a.close()
+			v.close()
+		end
+	end,
 	version = function()
 		print(versionStr)
 	end,
@@ -167,7 +178,7 @@ local function getInput()
 		if b[#b] ~= "lua" then
 			a = ".lua"
 		end
-		prog1 = loadfile(dir..prog..a,prog,makeNewEnv(args,prog))
+		prog1 = loadfile(fs.combine(dir,prog..a),prog,makeNewEnv(args,prog))
 	end
 	isInProgram = true
 	if prog1 then
@@ -219,8 +230,8 @@ local function init()
 	term.setCursorPos(1,1)
 	term.blit("minimalist","8888888888","ffffffffff")
 	term.setCursorPos(1,2)
-	if fs.exists(dir.."init.lua") then
-		local a = loadfile(dir.."init.lua")
+	if fs.exists(fs.combine(dir,"init.lua")) then
+		local a = loadfile(fs.combine(dir,"init.lua"))
 		if a then
 			pcall(a)
 		end
