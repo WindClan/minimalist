@@ -5,7 +5,7 @@ local pullEvent = os.pullEvent
 local pullEventRaw = os.pullEventRaw
 local isInProgram = true
 local newRequire = dofile("/rom/modules/main/cc/require.lua").make
-local dir = ""
+local dir = "/"
 local makeNewEnv
 function makeNewEnv(args,prog)
 	local newArgs = table.copy(args)
@@ -110,7 +110,7 @@ local defaults = {
 		if shouldAppend and (shouldAppend:lower() == "append" or shouldAppend:lower() == "a") then
 			mode = "a"
 		end
-		local a = fs.open(fileName,mode)
+		local a = fs.open(dir..fileName,mode)
 		local edit = true
 		local size = term.getSize()
 		parallel.waitForAny(function()
@@ -167,7 +167,7 @@ local function getInput()
 		if b[#b] ~= "lua" then
 			a = ".lua"
 		end
-		prog1 = loadfile(prog..a,prog,makeNewEnv(args,prog))
+		prog1 = loadfile(dir..prog..a,prog,makeNewEnv(args,prog))
 	end
 	isInProgram = true
 	if prog1 then
@@ -219,8 +219,8 @@ local function init()
 	term.setCursorPos(1,1)
 	term.blit("minimalist","8888888888","ffffffffff")
 	term.setCursorPos(1,2)
-	if fs.exists("init.lua") then
-		local a = loadfile("init.lua")
+	if fs.exists(dir.."init.lua") then
+		local a = loadfile(dir.."init.lua")
 		if a then
 			pcall(a)
 		end
